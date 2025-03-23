@@ -30,11 +30,17 @@ namespace APBD_03.Containers
 
         public override void LoadContainer(double mass)
         {
+            if (!isCargoHazardous)
+            {
+                Console.WriteLine("Is cargo hazardous? (y/n): ");
+                if (Console.ReadLine().Trim().ToLower() == "y") isCargoHazardous = true;
+            }
             if (isCargoHazardous && mass > MaximumPayload / 2)
             {
                 SendNotification("Attempt to load hazardous cargo into liquid container with serial number: " +
                                  SerialNumber +
                                  " , when cargo's mass is more than 50% of container's maximum payload.");
+                isCargoHazardous = false;
                 return;
             }
             if (!isCargoHazardous && mass > MaximumPayload * 0.9)

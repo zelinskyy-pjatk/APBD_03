@@ -24,7 +24,14 @@ namespace APBD_03.Containers
                     $"Cannot set container temperature to {newTemperature}\nMinim required temperature is {CurrentMinReqTemperature}");
             Temperature = newTemperature;
         }
-        
+
+        public override void LoadContainer(double mass)
+        {
+            SetProductType();
+            SetMinReqTemp();
+            LoadProduct(ProductType, mass, CurrentMinReqTemperature);
+        }
+
         public void LoadProduct(string productType, double massToLoad, double requiredTemperature) 
         {
             if (string.IsNullOrWhiteSpace(productType))
@@ -81,7 +88,36 @@ namespace APBD_03.Containers
             double minReqStTemp = Convert.ToDouble(Console.ReadLine().Trim());
             LoadProduct(userInput, productMass, minReqStTemp);
         }
-        
+
+        public void SetProductType()
+        {
+            Console.WriteLine("Enter product type: ");
+            this.ProductType = Console.ReadLine().Trim();
+        }
+
+        public void SetProductMass()
+        {
+            Console.WriteLine("Enter product mass: ");
+            if (!double.TryParse(Console.ReadLine().Trim(), out double mass))
+            {
+                Console.WriteLine("Ivalid input.");
+                return;
+            }
+            this.ProductMass = mass;
+        }
+
+        public void SetMinReqTemp()
+        {
+            Console.WriteLine("Enter product minimum required temperature: ");
+            if (!double.TryParse(Console.ReadLine().Trim(), out double minReqTemp))
+            {
+                Console.WriteLine("Ivalid input.");
+                return;
+            }
+            this.CurrentMinReqTemperature = minReqTemp;
+            this.Temperature = CurrentMinReqTemperature;
+        }
+
         public override void EmptyContainer()
         {
             base.EmptyContainer();
