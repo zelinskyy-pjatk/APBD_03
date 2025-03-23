@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace APBD_03.Containers
@@ -27,13 +28,39 @@ namespace APBD_03.Containers
 
         public override void LoadContainer(double mass)
         {
-
             base.LoadContainer(mass);
+        }
+
+        public override string GenerateSerialNumber(string containerType)
+        {
+            return base.GenerateSerialNumber("GC");
+        }
+
+        public override void SetContainerManually()
+        {
+            base.SetContainerManually();
+            string pattern = @"^KON-GC-\d+(?:\.\d+)?$";
+            Regex regex = new Regex(pattern);
+            while (!regex.IsMatch(SerialNumber))
+            {
+                Console.WriteLine("Entered Serial Number is incorrect. Try again please!");
+                base.SetSerialNumber(pattern);
+            }
+            Console.WriteLine("Enter pressure: ");
+            Pressure = Convert.ToDouble(Console.ReadLine());
         }
 
         public void SendNotification(string notification)
         {
             throw new NotImplementedException();
         }
+
+        public override string ToString()
+        {
+            return base.ToString() + "\nPressure: " + Pressure;
+        }
+
+        public void SetPressure(double Pressure) { this.Pressure = Pressure; }
+        public double GetPressure() { return this.Pressure; }
     }
 }

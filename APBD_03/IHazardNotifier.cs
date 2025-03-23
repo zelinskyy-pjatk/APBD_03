@@ -2,7 +2,7 @@
 
 public interface IHazardNotifier
 {
-    public void SendNotification(string notification);
+    void SendNotification(string notification);
 }
 
 

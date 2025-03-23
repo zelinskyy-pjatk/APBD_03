@@ -1,105 +1,14 @@
 ﻿using APBD_03.Containers;
 using APBD_03.Transportation;
-using System.ComponentModel;
-using System.IO.IsolatedStorage;
-using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization.Metadata;
-using System.Xml.Serialization;
+using System.Net.Sockets;
 
 namespace APBD_03
 {
     internal class Program
     {
-        private static APBD_03.Containers.Container container = new APBD_03.Containers.Container();
-        private static Transport transport = new Transport();
-        private static List<APBD_03.Containers.Container> containers = new List<APBD_03.Containers.Container>();
-        private static List<Transport> transportList = new List<Transport>();
-
-
-        // -- Create Container of Type Function -- //
-        public static APBD_03.Containers.Container CreateContainer()
-        {
-            Console.WriteLine(" -- Container Types -- "
-                            + '\n' + "1 - Gas Container" + '\n'
-                            + "2 - Liquid Container" + '\n'
-                            + "3 - Refrigirated Container" + '\n'
-                            + "Enter your choice: ");
-            switch (Convert.ToInt32(Console.ReadLine()))
-            {
-                case 1:
-                    container = new GasContainer();
-                    break;
-                case 2: 
-                    container = new LiquidContainer();
-                    break;
-                case 3: 
-                    container = new RefrigeratedContainer();
-                    break;
-            }
-            container.SetContainerManually();
-            return container;
-        }
-
-        // -- Create Transport of Type Function -- //
-        public static Transport CreateTransport()
-        {
-            if (container is null) Console.WriteLine("There was no container to load");
-            Console.WriteLine(" -- Transportation Options -- " + '\n'
-                            + "1 - Ship" + '\n' + "2 - Train" + '\n'
-                            + "3 - Truck" + '\n' + "Enter your choice: ");
-            switch (Convert.ToInt32(Console.ReadLine()))
-            {
-                case 1: return new Ship();
-                case 2: return new Train();
-                case 3: return new Truck();
-            }
-            return transport;
-        }
-        
-        // -- Choose Container Function -- //
-        public static APBD_03.Containers.Container ChooseContainer()
-        {
-            int j = 0;
-            for (int i = 0; i < containers.Count; i++)
-            {
-                j = i + 1;
-                Console.WriteLine(j + " - " + containers[i].GetType() + " " + containers[i].SerialNumber);
-            }
-            Console.WriteLine("Enter your choice: ");
-            int choice = Convert.ToInt32(Console.ReadLine());
-            return containers[choice -= 1];
-        }
-
-        // -- Choose Containers List Function -- //
-        public static List<APBD_03.Containers.Container> ChooseListOfContainers()
-        {
-            List<APBD_03.Containers.Container> listOfContainers = new List<APBD_03.Containers.Container> ();
-            int j = 0;
-            for (int i = 0; i < containers.Count; i++)
-            {
-                j = i + 1;
-                Console.WriteLine(j + " - " + containers[i].GetType() + " " + containers[i].SerialNumber);
-            }
-            int choice = 0;
-            do
-            {
-                Console.WriteLine("Enter 0 - if you want to exit\nEnter your choice: ");
-                choice = Convert.ToInt32(Console.ReadLine());
-                if (listOfContainers.Contains(containers[choice])) Console.WriteLine("Erorr! This container is already on the list.");
-                listOfContainers.Add(containers[choice - 1]);
-            } while (choice != 0);
-            return listOfContainers;
-        }
-
-
-        // -- Choose Transport Function -- //
-        public static Transport ChooseTransport() {
-
-
-            return null;
-        
-        }
-
+        private static Container container;
+        private static Ship ship;       
+        private static DataProcessor processor = new DataProcessor();
 
         public static void Main(String[] args)
         {
@@ -107,86 +16,153 @@ namespace APBD_03
             {
                 int userChoice = Menu();
                 if (userChoice == 0) System.Environment.Exit(0);
-                else
+                
+                switch (userChoice)
                 {
-                    switch (userChoice)
-                    {
-                        case 1: 
+                    case 1:
+                        {
+                            container = processor.CreateContainer();
+                            break;
+                        }
+                    case 2:
+                        {
+                            ship = processor.CreateShip();
+                            processor.AddShip(ship);
+                            break;
+                        }
+                    case 3:
+                        {
+                            Console.WriteLine("Choose container: ");
+                            container = processor.ChooseContainer();
+                            if (container == null) break;
+                            Console.WriteLine("Enter mass of load: ");
+                            if (!double.TryParse(Console.ReadLine(), out double mass))
                             {
-                                container = CreateContainer();
-                                containers.Add(container);
+                                Console.WriteLine("You entered invalid number");
                                 break;
                             }
-                        case 2:
-                            {
-                                transport = CreateTransport();
-                                transportList.Add(transport);   
-                                break;
-                            }
-                        case 3:
-                            {
-                                Console.WriteLine("Choose container: ");
-                                container = ChooseContainer();
-                                Console.WriteLine("Enter mass of load you want to load: ");
-                                container.LoadContainer(Double.Parse(Console.ReadLine()));
-                                break;
-                            }
-                        case 4:
-                            {
-                                transport.LoadContainer(container);
-                                break;
-                            }
-                        case 5:
-                            {
 
-                                break;
-                            }
-                        case 6:
+                            try
                             {
-                                transport.RemoveContainer(container);
-                                break;
-                                
-                            }
-                        case 7:
+                                container.LoadContainer(mass);
+                            } catch (OverfillException ex)
                             {
-                                //transport.UnloadContainer();
-                                break;
-                                
+                                Console.WriteLine(ex.Message);
                             }
-                        case 8:
-                            {
-                                Console.WriteLine("Choose a new container to be loaded onto transport");
-                                APBD_03.Containers.Container newContainer = ChooseContainer();
-                                //transport.ReplaceContainer(container, newContainer);
-                                break;
-                            }
-                        case 9:
-                            {
-                                break;
-                            }
-                        case 10:
-                            {
-                                Console.WriteLine("Enter serial number of container to get an information: ");
-                                foreach (APBD_03.Containers.Container c in containers)
-                                    if (c.SerialNumber.Equals(Console.ReadLine()))
-                                        Console.WriteLine(c);
-                                break;
-                            }
-                            case 11:
-                            {
-                                // /????
-                                Console.WriteLine("Choose transport to show information about.");
-                                transport = CreateTransport();
-                                Console.WriteLine(transport);
-                                break;
-                            }
-                    }
+                            break;
+                        }
+                    case 4:
+                        {
+                            Console.WriteLine("Choose a container: ");
+                            container = processor.ChooseContainer();
+                            if (container == null) break;
+
+                            Console.WriteLine("Choose a ship to load container: ");
+                            ship = processor.ChooseShip();
+                            if (ship == null) break;
+
+                            processor.LoadContainerOnTransport(ship, container);
+                            break;
+                        }
+                    case 5:
+                        {
+                            Console.WriteLine("Choose a list of containers to be transported: ");
+                            var containersList = processor.ChooseListOfContainers();
+                            if(containersList == null) break;
+
+                            Console.WriteLine("Choose ship to load these containers: ");
+                            ship = processor.ChooseShip();
+                            if (ship == null) break;
+
+                            processor.LoadListOfContainersOnShip(ship, containersList);
+                            break;
+                        }
+                    case 6:{
+                            Console.WriteLine("Choose ship: ");
+                            ship = processor.ChooseShip();
+                            if(ship == null) break;
+
+                            Console.WriteLine("Choose container to be removed: ");
+                            container = processor.ChooseContainer(ship);
+                            if(container == null) break;
+
+                            processor.RemoveContainer(ship, container);
+                            break;
+
+                        }
+                    case 7:
+                        {
+                            Console.WriteLine("Enter container you want to unload: ");
+                            container = processor.ChooseContainer();
+                            
+                            processor.UnloadContainer(container);                            
+                            break;
+
+                        }
+                    case 8:
+                        {
+                            Console.WriteLine("Choose ship for replacement: ");
+                            ship = processor.ChooseShip();
+                            if (ship == null) break;
+
+                            Container replacer = new Container();
+                            Console.WriteLine("Choose an old container to be replaced: ");
+                            container = processor.ChooseContainer(ship);
+                            if(container == null) break;
+
+                            Console.WriteLine("Do you want to create a new container to replace an old one with? (y/n): ");
+                            string usrChoice = Console.ReadLine().Trim().ToLower();
+                            if (usrChoice == "y") replacer = processor.CreateContainer();
+                            else if (usrChoice == "n") replacer = processor.ChooseContainer();
+                            else Console.WriteLine("Error occured! Incorrect option chosen.");
+                            if (replacer == null) break;
+
+                            processor.ReplaceContainer(ship, container, replacer);
+                            break;
+                        }
+                    case 9:
+                        {
+
+                            Console.WriteLine("Choose ship FROM which container will be transfered: ");
+                            ship = processor.ChooseShip();
+                            if (ship == null) break;
+
+                            Console.WriteLine("Choose ship TO which container will be transfered: ");
+                            var newShip = processor.ChooseShip();
+                            if (newShip == null) break;
+
+                            Console.WriteLine("Choose container to be transfered: ");
+                            container = processor.ChooseContainer(ship);
+                            if (container == null) break;
+
+                            processor.TransferContainer(ship, newShip, container);
+                            break;
+                        }
+                    case 10:
+                        {
+                            Console.WriteLine("Enter serial number of container to get an information: ");
+                            Console.WriteLine(processor.GetContainer(Console.ReadLine().Trim()));
+                            break;
+                        }
+                    case 11:
+                        {
+                            Console.WriteLine("Enter transport serial number of ship to get an information: ");
+                            Console.WriteLine(processor.GetShip(Console.ReadLine().Trim()));
+                            break;
+                        }
                 }
             }
         }
 
         public static int Menu()
         {
+            Console.WriteLine(new string('-', 50));
+            Console.WriteLine("List of containers: ");
+            foreach(var keyValuePair in processor.GetContainers())
+                Console.WriteLine(keyValuePair.Key + $"\nStatus: {keyValuePair.Value}\n");
+            Console.WriteLine(new string('-', 50) + '\n' + new string('/', 50) + '\n' + new string('-', 50));
+            Console.WriteLine($"List of ships:\n {String.Join('\n', processor.GetShips())}\n");
+            Console.WriteLine(new string('-', 50));
             Console.WriteLine(" -- Menu -- ");
             Console.WriteLine("0 - Exit");
             Console.WriteLine("1 - Create a container of given type");
@@ -204,8 +180,6 @@ namespace APBD_03
             return Convert.ToInt32(Console.ReadLine());
         }
     }
-
-    
 }
 
 
