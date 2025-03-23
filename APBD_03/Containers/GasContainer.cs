@@ -52,7 +52,7 @@ namespace APBD_03.Containers
 
         public void SendNotification(string notification)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"Caution! There is high possibility of hazardous event happening. Container {SerialNumber}.");
         }
 
         public override string ToString()
